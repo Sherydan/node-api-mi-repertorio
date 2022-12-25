@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const fsPromises = require('fs').promises;
+const fsPromise = require('fs').promises;
 const filePath = './songs.json';
 
 app.listen(3000, console.log('Listening on port 3000!'));
@@ -35,3 +35,25 @@ const validateSong = (song) => {
     }
     return true;
 };
+
+app.get("/canciones", async (req, res) => {
+    if (checkIfFileExists(filePath)) {
+        const songs = JSON.parse(await fsPromise.readFile("songs.json"));
+        res.status(200).send(songs);
+    } else {
+        res.status(404).send("No songs found!");
+    }
+});
+
+app.post("/canciones", async (req, res) => {
+    const song = req.body;
+    if (!validateSong(song)) {
+        res.status(400).send("Invalid song!");
+        return;
+    } else {
+        const songs = JSON.parse(await fsPromise.readFile("songs.json"));
+        songs.push(song);
+        await fsPromise.writeFile("songs.json", JSON.stringify(songs));
+        res.status(200).send("Song added!");
+    }
+});
