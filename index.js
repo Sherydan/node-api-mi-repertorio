@@ -57,3 +57,26 @@ app.post("/canciones", async (req, res) => {
         res.status(200).send("Song added!");
     }
 });
+
+app.delete("/canciones/:id", async (req, res) => {
+    // check if file exists
+    if (!checkIfFileExists(filePath)) {
+        res.status(404).send("Nothing to delete!");
+        return;
+    } else {
+        const { id } = req.params;
+        const songs = JSON.parse(await fsPromise.readFile("songs.json"));
+        const index = songs.findIndex((s) => s.id == id);
+
+        // if song not found
+        if (index === -1) {
+            res.status(404).send("Song not found!");
+            return;
+        } else {
+            // if found
+            songs.splice(index, 1);
+            await fsPromise.writeFile("songs.json", JSON.stringify(songs));
+            res.status(200).send("Song deleted!");
+        }
+    }
+});
